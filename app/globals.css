@@ -1,26 +1,293 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Custom animations */
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-bottom {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Apply animations */
+.animate-gradient {
+  animation: gradient-x 3s ease infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-slide-in-bottom {
+  animation: slide-in-bottom 0.3s ease-out;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #3b82f6, #2563eb);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #2563eb, #1d4ed8);
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  scroll-behavior: smooth;
+}
+
+button, a, input, select, textarea {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Disable Recharts hover background */
+.recharts-wrapper .recharts-cartesian-grid-bg,
+.recharts-wrapper .recharts-active-shape,
+.recharts-wrapper .recharts-rectangle.recharts-tooltip-cursor,
+.recharts-wrapper .recharts-tooltip-cursor,
+.recharts-bar .recharts-tooltip-cursor,
+.recharts-line .recharts-tooltip-cursor,
+.recharts-area .recharts-tooltip-cursor,
+rect.recharts-tooltip-cursor {
+  display: none !important;
+  fill: transparent !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.recharts-surface {
+  overflow: visible !important;
+}
+
+.recharts-wrapper:hover .recharts-tooltip-cursor,
+.recharts-wrapper:hover rect[class*="tooltip-cursor"] {
+  display: none !important;
+  fill: none !important;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.sidebar li.active,
+.sidebar li:hover {
+    background: #d1ffd1;
+}
+
+.main-content {
+    flex: 1;
+    padding: 25px;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.nav-links span {
+    margin-right: 20px;
+    cursor: pointer;
+}
+
+.nav-links .selected {
+    font-weight: bold;
+    border-bottom: 2px solid black;
+}
+
+.logout-btn {
+    background: black;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.bins-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.bin-card {
+    background: white;
+    padding: 20px;
+    width: 280px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.priority {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.priority.high { background: #ffb3b3; }
+.priority.medium { background: #ffe9a6; }
+.priority.low { background: #c8ffd1; }
+
+.progress-bar {
+    height: 10px;
+    background: #eee;
+    border-radius: 5px;
+    margin: 8px 0;
+}
+
+.progress-bar div {
+    height: 100%;
+    background: green;
+    border-radius: 5px;
+}
+
+.bin-card.high .progress-bar div { background: #ff5c5c; }
+.bin-card.medium .progress-bar div { background: #ffc233; }
+.bin-card.low .progress-bar div { background: #49c772; }
+
+.small-text { font-size: 12px; color: #666; }
+
+.alert {
+    background: #fff4d6;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+body{
+  font-family:Verdana, Geneva, Tahoma, sans-serif
 }

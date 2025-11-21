@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  name      String
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  requests  Request[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// Waste bin model
+model Bin {
+  id           String    @id @default(cuid())
+  binId        String    @unique // Display ID like "BIN-001"
+  category     Category
+  location     String
+  latitude     Float?
+  longitude    Float?
+  capacity     Float     @default(100) // in liters or kg
+  currentLevel Float     @default(0)   // current fill percentage (0-100)
+  status       BinStatus @default(LOW)
+  lastEmptied  DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  requests     Request[]
+}
+
+enum Category {
+  PLASTIC
+  PAPER
+  METAL
+  ORGANIC
+  GLASS
+  EWASTE
+}
+
+enum BinStatus {
+  LOW      // 0-50%
+  MEDIUM   // 51-80%
+  HIGH     // 81-100%
+}
+
+// Special request model
+model Request {
+  id          String        @id @default(cuid())
+  type        RequestType
+  description String?
+  priority    Priority      @default(NORMAL)
+  status      RequestStatus @default(PENDING)
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  binId       String?
+  bin         Bin?          @relation(fields: [binId], references: [id], onDelete: SetNull)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  completedAt DateTime?
+}
+
+enum RequestType {
+  MANUAL_PICKUP
+  MAINTENANCE
+  HAZARDOUS_WASTE
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum RequestStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// Reports/Analytics model
+model Report {
+  id              String   @id @default(cuid())
+  date            DateTime @default(now())
+  wasteCollected  Float    // total waste in kg
+  categoryData    Json     // JSON object with category breakdown
+  peakHours       Json     // JSON object with hourly data
+  generatedAt     DateTime @default(now())
+  
+  @@index([date])
+}
