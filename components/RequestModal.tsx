@@ -136,7 +136,9 @@ export function RequestModal({ isOpen, onClose, onSubmit, editingRequest }: Requ
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || `Failed to ${editingRequest ? 'update' : 'create'} request`)
+        // Show specific error message from API
+        const errorMessage = data.error || data.message || `Failed to ${editingRequest ? 'update' : 'create'} request`
+        throw new Error(errorMessage)
       }
 
       onSubmit()
@@ -154,54 +156,36 @@ export function RequestModal({ isOpen, onClose, onSubmit, editingRequest }: Requ
   const SelectedIcon = selectedType?.icon || Package
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4 animate-fade-in">
       <div
-        className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-scale-in"
+        className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header with Gradient */}
-        <div
-          className={`relative bg-linear-to-r ${selectedType?.color} p-6 text-white overflow-hidden`}
-        >
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNnoiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xIi8+PC9nPjwvc3ZnPg==')] opacity-20"></div>
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
-                <SelectedIcon className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold mb-1">
-                  {editingRequest ? 'Edit Request' : 'Create Request'}
-                </h2>
-                <p className="text-white/90 text-sm">
-                  {editingRequest ? 'Update service request details' : 'Submit a new service request'}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/20 rounded-xl transition-all duration-200 hover:rotate-90"
-              disabled={loading}
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgb(218,220,224)]">
+          <h2 className="text-xl font-normal text-[rgb(32,33,36)]">
+            {editingRequest ? 'Edit request' : 'Create request'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-[rgb(241,243,244)] rounded-full transition-colors text-[rgb(95,99,104)]"
+            disabled={loading}
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto flex-1">
           {error && (
-            <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-700 text-sm font-medium flex items-start gap-3 animate-slide-in-bottom">
-              <div className="w-5 h-5 rounded-full bg-red-200 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-xs font-bold">!</span>
-              </div>
+            <div className="p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-100">
               {error}
             </div>
           )}
 
           {/* Request Type */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-[rgb(60,64,67)] mb-2">
               Request Type <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -212,23 +196,15 @@ export function RequestModal({ isOpen, onClose, onSubmit, editingRequest }: Requ
                     key={type.value}
                     type="button"
                     onClick={() => setFormData({ ...formData, type: type.value })}
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                    className={`p-4 rounded-lg border transition-colors text-left ${
                       formData.type === type.value
-                        ? `border-transparent bg-linear-to-br ${type.color} text-white shadow-lg scale-105`
-                        : "border-gray-200 hover:border-gray-300 hover:shadow-md"
+                        ? "bg-[rgb(232,240,254)] text-[rgb(26,115,232)] border-[rgb(26,115,232)]"
+                        : "bg-white text-[rgb(60,64,67)] border-[rgb(218,220,224)] hover:bg-[rgb(248,249,250)]"
                     }`}
                   >
-                    <TypeIcon
-                      className={`w-6 h-6 mb-2 ${
-                        formData.type === type.value ? "text-white" : "text-gray-400"
-                      }`}
-                    />
-                    <div className="font-semibold text-sm mb-1">{type.label}</div>
-                    <div
-                      className={`text-xs ${
-                        formData.type === type.value ? "text-white/80" : "text-gray-500"
-                      }`}
-                    >
+                    <TypeIcon className="w-5 h-5 mb-2" />
+                    <div className="font-medium text-sm mb-1">{type.label}</div>
+                    <div className="text-xs opacity-70">
                       {type.description}
                     </div>
                   </button>
@@ -239,13 +215,13 @@ export function RequestModal({ isOpen, onClose, onSubmit, editingRequest }: Requ
 
           {/* Bin Selection */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[rgb(60,64,67)] mb-1">
               Select Bin (Optional)
             </label>
             <select
               value={formData.binId}
               onChange={(e) => setFormData({ ...formData, binId: e.target.value })}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white text-sm font-medium"
+              className="w-full px-3 py-2 border border-[rgb(218,220,224)] rounded-md focus:outline-none focus:ring-2 focus:ring-[rgb(26,115,232)]/20 focus:border-[rgb(26,115,232)] transition-all bg-white text-sm"
             >
               <option value="">No specific bin</option>
               {bins.map((bin) => (
@@ -258,7 +234,7 @@ export function RequestModal({ isOpen, onClose, onSubmit, editingRequest }: Requ
 
           {/* Priority */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-[rgb(60,64,67)] mb-2">
               Priority <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-3 gap-3">
@@ -267,16 +243,13 @@ export function RequestModal({ isOpen, onClose, onSubmit, editingRequest }: Requ
                   key={priority.value}
                   type="button"
                   onClick={() => setFormData({ ...formData, priority: priority.value })}
-                  className={`p-3 rounded-xl border-2 transition-all duration-200 text-center ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
                     formData.priority === priority.value
-                      ? `border-transparent bg-linear-to-br ${priority.color} text-white shadow-lg scale-105`
-                      : "border-gray-200 hover:border-gray-300 hover:shadow-md"
+                      ? "bg-[rgb(232,240,254)] text-[rgb(26,115,232)] border-[rgb(26,115,232)]"
+                      : "bg-white text-[rgb(60,64,67)] border-[rgb(218,220,224)] hover:bg-[rgb(248,249,250)]"
                   }`}
                 >
-                  <div className="font-semibold text-sm">{priority.label.replace(" Priority", "")}</div>
-                  {formData.priority === priority.value && (
-                    <div className="mt-1.5 mx-auto w-2 h-2 bg-white rounded-full"></div>
-                  )}
+                  {priority.label.replace(" Priority", "")}
                 </button>
               ))}
             </div>
@@ -284,7 +257,7 @@ export function RequestModal({ isOpen, onClose, onSubmit, editingRequest }: Requ
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[rgb(60,64,67)] mb-1">
               Description <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -293,33 +266,30 @@ export function RequestModal({ isOpen, onClose, onSubmit, editingRequest }: Requ
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Please provide details about your request..."
               rows={4}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none text-sm"
+              className="w-full px-3 py-2 border border-[rgb(218,220,224)] rounded-md focus:outline-none focus:ring-2 focus:ring-[rgb(26,115,232)]/20 focus:border-[rgb(26,115,232)] transition-all resize-none text-sm"
             />
-            <p className="mt-1.5 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-[rgb(95,99,104)]">
               {formData.description.length} / 500 characters
             </p>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4 border-t border-gray-100">
+          <div className="flex justify-end gap-3 pt-6">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               onClick={onClose}
               disabled={loading}
-              className="flex-1"
+              className="text-[rgb(26,115,232)] hover:bg-[rgb(232,240,254)] hover:text-[rgb(26,115,232)] font-medium"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  {editingRequest ? 'Updating...' : 'Creating...'}
-                </div>
-              ) : (
-                editingRequest ? 'Update Request' : 'Create Request'
-              )}
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="bg-[rgb(26,115,232)] hover:bg-[rgb(24,90,188)] text-white font-medium px-6 rounded-md shadow-none"
+            >
+              {loading ? 'Saving...' : (editingRequest ? 'Save' : 'Create')}
             </Button>
           </div>
         </form>

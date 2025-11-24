@@ -10,85 +10,64 @@ interface CategoryBarChartProps {
 }
 
 const COLORS: Record<string, string> = {
-  PLASTIC: "#3b82f6",    // blue
-  PAPER: "#8b5cf6",      // violet
-  METAL: "#64748b",      // slate
-  ORGANIC: "#22c55e",    // green
-  GLASS: "#06b6d4",      // cyan
-  EWASTE: "#ef4444",     // red
+  PLASTIC: "#1a73e8",    // Google Blue
+  PAPER: "#a142f4",      // Purple
+  METAL: "#5f6368",      // Google Gray
+  ORGANIC: "#34a853",    // Google Green
+  GLASS: "#24c1e0",      // Cyan
+  EWASTE: "#ea4335",     // Google Red
 }
 
 export function CategoryBarChart({ data }: CategoryBarChartProps) {
   return (
-    <div style={{ 
-      position: 'relative',
-      width: '100%',
-      height: '300px'
-    }}>
-      <style jsx>{`
-        :global(.recharts-tooltip-cursor) {
-          fill: none !important;
-          display: none !important;
-        }
-        :global(.recharts-active-shape) {
-          display: none !important;
-        }
-      `}</style>
-      <ResponsiveContainer width="100%" height={300}>
+    <div className="w-full h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart 
           data={data}
-          margin={{ top: 10, right: 10, left: 0, bottom: 10 }}
-          barSize={50}
+          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+          barSize={40}
         >
-          <defs>
-            {Object.entries(COLORS).map(([key, color]) => (
-              <linearGradient key={key} id={`gradient${key}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={color} stopOpacity={0.8}/>
-                <stop offset="100%" stopColor={color} stopOpacity={0.4}/>
-              </linearGradient>
-            ))}
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#f1f3f4" vertical={false} />
           <XAxis 
             dataKey="category" 
-            stroke="#6b7280"
-            style={{ fontSize: '11px', fontWeight: 500 }}
+            stroke="#9aa0a6"
+            tick={{ fill: '#5f6368', fontSize: 11 }}
             tickLine={false}
+            axisLine={false}
+            dy={10}
           />
           <YAxis 
-            stroke="#6b7280"
-            style={{ fontSize: '12px', fontWeight: 500 }}
+            stroke="#9aa0a6"
+            tick={{ fill: '#5f6368', fontSize: 12 }}
+            tickLine={false}
+            axisLine={false}
             tickFormatter={(value) => `${value}%`}
             domain={[0, 100]}
             ticks={[0, 25, 50, 75, 100]}
-            tickLine={false}
+            dx={-10}
           />
           <Tooltip
             contentStyle={{
               backgroundColor: 'white',
               border: 'none',
-              borderRadius: '12px',
-              boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+              borderRadius: '8px',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
               padding: '12px'
             }}
-            labelStyle={{ fontWeight: 600, marginBottom: '4px', color: '#1f2937' }}
+            itemStyle={{ fontSize: '12px', fontWeight: 500 }}
+            labelStyle={{ fontSize: '12px', color: '#5f6368', marginBottom: '8px' }}
+            cursor={{ fill: '#f1f3f4', opacity: 0.5 }}
             formatter={(value: number) => [`${value.toFixed(1)}%`, 'Fill Level']}
-            cursor={{ fill: 'none', stroke: 'none' }}
-            wrapperStyle={{ outline: 'none' }}
-            isAnimationActive={false}
           />
           <Bar 
             dataKey="value" 
-            radius={[8, 8, 0, 0]}
-            minPointSize={5}
-            isAnimationActive={true}
-            animationDuration={800}
-            animationEasing="ease-out"
+            radius={[4, 4, 0, 0]}
+            animationDuration={1000}
           >
             {data.map((entry, index) => (
               <Cell 
                 key={`cell-${index}`} 
-                fill={`url(#gradient${entry.category})`}
+                fill={COLORS[entry.category] || "#1a73e8"}
               />
             ))}
           </Bar>

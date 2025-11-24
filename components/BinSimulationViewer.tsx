@@ -138,7 +138,7 @@ export function BinSimulationViewer() {
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-xs font-medium text-gray-700">Fill Level</span>
                       <span className={`text-sm font-bold ${priorityConfig.color}`}>
-                        {fillPercentage.toFixed(0)}%
+                        {fillPercentage.toFixed(2)}%
                       </span>
                     </div>
                     
@@ -152,7 +152,7 @@ export function BinSimulationViewer() {
                     </div>
                     
                     <div className="flex justify-between text-xs text-gray-400 mt-1">
-                      <span>{bin.fillLevel}L</span>
+                      <span>{bin.fillLevel.toFixed(2)}L</span>
                       <span>{bin.capacity}L</span>
                     </div>
                   </div>

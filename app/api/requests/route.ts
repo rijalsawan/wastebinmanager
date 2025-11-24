@@ -62,21 +62,33 @@ export async function GET(request: NextRequest) {
 
 // POST /api/requests - Create a new request
 const createRequestSchema = z.object({
-  type: z.enum(["MANUAL_PICKUP", "MAINTENANCE", "HAZARDOUS_WASTE"]),
+  type: z.enum(["COLLECTION", "MAINTENANCE", "REPAIR", "COMPLAINT"]),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  priority: z.enum(["NORMAL", "HIGH", "URGENT"]),
-  binId: z.string().optional(),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH"]),
+  binId: z.string().optional().nullable(),
 })
 
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
-    if (!session) {
+    if (!session || !session.user || !session.user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const body = await request.json()
     const validatedData = createRequestSchema.parse(body)
+
+    // Verify user exists in database
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found in database" },
+        { status: 404 }
+      )
+    }
 
     // If binId is provided, verify it exists
     if (validatedData.binId) {
@@ -95,7 +107,7 @@ export async function POST(request: NextRequest) {
     const newRequest = await prisma.request.create({
       data: {
         ...validatedData,
-        userId: session.user.id!,
+        userId: user.id,
         status: "PENDING",
       },
       include: {
@@ -118,8 +130,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newRequest, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
+      // Format validation errors with specific field messages
+      const fieldErrors = error.issues.map(issue => {
+        const field = issue.path.join('.')
+        return `${field}: ${issue.message}`
+      })
+      
       return NextResponse.json(
-        { error: "Validation failed", details: error.issues },
+        { 
+          error: fieldErrors.join(', '),
+          details: error.issues 
+        },
         { status: 400 }
       )
     }

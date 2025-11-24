@@ -81,43 +81,30 @@ export function BinModal({ isOpen, onClose, onSubmit, bin }: BinModalProps) {
     }
   }
 
-  const selectedCategory = WASTE_CATEGORIES.find((c) => c.value === formData.category)
-
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4 animate-fade-in">
       <div
-        className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-scale-in"
+        className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header with Gradient */}
-        <div className={`relative bg-linear-to-r ${selectedCategory?.color} p-6 text-white overflow-hidden`}>
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNnoiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4xIi8+PC9nPjwvc3ZnPg==')] opacity-20"></div>
-          <div className="relative flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold mb-1">
-                {bin ? "Edit Bin" : "Create New Bin"}
-              </h2>
-              <p className="text-white/90 text-sm">
-                {bin ? "Update bin information" : "Add a new waste bin to your system"}
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/20 rounded-xl transition-all duration-200 hover:rotate-90"
-              disabled={loading}
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[rgb(218,220,224)]">
+          <h2 className="text-xl font-normal text-[rgb(32,33,36)]">
+            {bin ? "Edit bin" : "Create new bin"}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-[rgb(241,243,244)] rounded-full transition-colors text-[rgb(95,99,104)]"
+            disabled={loading}
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto flex-1">
           {error && (
-            <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-700 text-sm font-medium flex items-start gap-3 animate-slide-in-bottom">
-              <div className="w-5 h-5 rounded-full bg-red-200 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-xs font-bold">!</span>
-              </div>
+            <div className="p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-100">
               {error}
             </div>
           )}
@@ -125,7 +112,7 @@ export function BinModal({ isOpen, onClose, onSubmit, bin }: BinModalProps) {
           <div className="grid gap-6 md:grid-cols-2">
             {/* Bin ID */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-[rgb(60,64,67)] mb-1">
                 Bin ID <span className="text-red-500">*</span>
               </label>
               <Input
@@ -135,16 +122,13 @@ export function BinModal({ isOpen, onClose, onSubmit, bin }: BinModalProps) {
                 onChange={(e) => setFormData({ ...formData, binId: e.target.value })}
                 placeholder="BIN-001"
                 disabled={!!bin}
-                icon={<Tag className="w-4 h-4" />}
+                className="rounded-md border-[rgb(218,220,224)] focus:border-[rgb(26,115,232)] focus:ring-[rgb(26,115,232)]"
               />
-              {bin && (
-                <p className="mt-1.5 text-xs text-gray-500">Bin ID cannot be changed after creation</p>
-              )}
             </div>
 
             {/* Category */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-[rgb(60,64,67)] mb-2">
                 Waste Category <span className="text-red-500">*</span>
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -153,16 +137,13 @@ export function BinModal({ isOpen, onClose, onSubmit, bin }: BinModalProps) {
                     key={cat.value}
                     type="button"
                     onClick={() => setFormData({ ...formData, category: cat.value })}
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
                       formData.category === cat.value
-                        ? `border-transparent bg-linear-to-br ${cat.color} text-white shadow-lg scale-105`
-                        : "border-gray-200 hover:border-gray-300 hover:shadow-md"
+                        ? "bg-[rgb(232,240,254)] text-[rgb(26,115,232)] border-[rgb(26,115,232)]"
+                        : "bg-white text-[rgb(60,64,67)] border-[rgb(218,220,224)] hover:bg-[rgb(248,249,250)]"
                     }`}
                   >
-                    <div className="font-semibold text-sm">{cat.label}</div>
-                    {formData.category === cat.value && (
-                      <div className="mt-1 w-2 h-2 bg-white rounded-full"></div>
-                    )}
+                    {cat.label}
                   </button>
                 ))}
               </div>
@@ -170,7 +151,7 @@ export function BinModal({ isOpen, onClose, onSubmit, bin }: BinModalProps) {
 
             {/* Location */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-[rgb(60,64,67)] mb-1">
                 Location <span className="text-red-500">*</span>
               </label>
               <Input
@@ -179,13 +160,13 @@ export function BinModal({ isOpen, onClose, onSubmit, bin }: BinModalProps) {
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 placeholder="123 Main Street, City"
-                icon={<MapPin className="w-4 h-4" />}
+                className="rounded-md border-[rgb(218,220,224)] focus:border-[rgb(26,115,232)] focus:ring-[rgb(26,115,232)]"
               />
             </div>
 
             {/* Latitude */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-[rgb(60,64,67)] mb-1">
                 Latitude
               </label>
               <Input
@@ -199,12 +180,13 @@ export function BinModal({ isOpen, onClose, onSubmit, bin }: BinModalProps) {
                   })
                 }
                 placeholder="40.7128"
+                className="rounded-md border-[rgb(218,220,224)] focus:border-[rgb(26,115,232)] focus:ring-[rgb(26,115,232)]"
               />
             </div>
 
             {/* Longitude */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-[rgb(60,64,67)] mb-1">
                 Longitude
               </label>
               <Input
@@ -218,12 +200,13 @@ export function BinModal({ isOpen, onClose, onSubmit, bin }: BinModalProps) {
                   })
                 }
                 placeholder="-74.0060"
+                className="rounded-md border-[rgb(218,220,224)] focus:border-[rgb(26,115,232)] focus:ring-[rgb(26,115,232)]"
               />
             </div>
 
             {/* Capacity */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-[rgb(60,64,67)] mb-1">
                 Capacity (Liters) <span className="text-red-500">*</span>
               </label>
               <Input
@@ -235,41 +218,28 @@ export function BinModal({ isOpen, onClose, onSubmit, bin }: BinModalProps) {
                   setFormData({ ...formData, capacity: parseInt(e.target.value) || 100 })
                 }
                 placeholder="100"
-                icon={<Box className="w-4 h-4" />}
+                className="rounded-md border-[rgb(218,220,224)] focus:border-[rgb(26,115,232)] focus:ring-[rgb(26,115,232)]"
               />
-              <div className="mt-3 flex items-center gap-2">
-                <Ruler className="w-4 h-4 text-gray-400" />
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full bg-linear-to-r ${selectedCategory?.color} transition-all duration-300`}
-                    style={{ width: `${Math.min((formData.capacity / 500) * 100, 100)}%` }}
-                  ></div>
-                </div>
-                <span className="text-xs font-medium text-gray-600">{formData.capacity}L</span>
-              </div>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4 border-t border-gray-100">
+          <div className="flex justify-end gap-3 pt-6">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               onClick={onClose}
               disabled={loading}
-              className="flex-1"
+              className="text-[rgb(26,115,232)] hover:bg-[rgb(232,240,254)] hover:text-[rgb(26,115,232)] font-medium"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  {bin ? "Updating..." : "Creating..."}
-                </div>
-              ) : (
-                <>{bin ? "Update Bin" : "Create Bin"}</>
-              )}
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="bg-[rgb(26,115,232)] hover:bg-[rgb(24,90,188)] text-white font-medium px-6 rounded-md shadow-none"
+            >
+              {loading ? "Saving..." : (bin ? "Save" : "Create")}
             </Button>
           </div>
         </form>

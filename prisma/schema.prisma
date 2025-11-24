@@ -20,6 +20,7 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   requests  Request[]
+  bins      Bin[]
 }
 
 enum Role {
@@ -39,9 +40,11 @@ model Bin {
   currentLevel Float     @default(0)   // current fill percentage (0-100)
   status       BinStatus @default(LOW)
   lastEmptied  DateTime  @default(now())
+  createdBy    String?   // User ID of creator
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   requests     Request[]
+  creator      User?     @relation(fields: [createdBy], references: [id], onDelete: SetNull)
 }
 
 enum Category {
@@ -64,7 +67,7 @@ model Request {
   id          String        @id @default(cuid())
   type        RequestType
   description String?
-  priority    Priority      @default(NORMAL)
+  priority    Priority      @default(MEDIUM)
   status      RequestStatus @default(PENDING)
   userId      String
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -76,16 +79,16 @@ model Request {
 }
 
 enum RequestType {
-  MANUAL_PICKUP
+  COLLECTION
   MAINTENANCE
-  HAZARDOUS_WASTE
+  REPAIR
+  COMPLAINT
 }
 
 enum Priority {
   LOW
-  NORMAL
+  MEDIUM
   HIGH
-  URGENT
 }
 
 enum RequestStatus {

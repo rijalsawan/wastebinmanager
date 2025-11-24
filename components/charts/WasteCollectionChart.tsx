@@ -12,74 +12,65 @@ interface WasteCollectionChartProps {
 
 export function WasteCollectionChart({ data }: WasteCollectionChartProps) {
   return (
-    <div style={{ 
-      position: 'relative',
-      width: '100%',
-      height: '300px'
-    }}>
-      <style jsx>{`
-        :global(.recharts-tooltip-cursor) {
-          fill: none !important;
-          display: none !important;
-        }
-      `}</style>
-      <ResponsiveContainer width="100%" height={300}>
-        <AreaChart data={data}>
+    <div className="w-full h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="colorDaily" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#1a73e8" stopOpacity={0.1}/>
+              <stop offset="95%" stopColor="#1a73e8" stopOpacity={0}/>
             </linearGradient>
             <linearGradient id="colorWeekly" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#a142f4" stopOpacity={0.1}/>
+              <stop offset="95%" stopColor="#a142f4" stopOpacity={0}/>
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#f1f3f4" vertical={false} />
           <XAxis 
             dataKey="date" 
-            stroke="#6b7280"
-            style={{ fontSize: '12px', fontWeight: 500 }}
+            stroke="#9aa0a6"
+            tick={{ fill: '#5f6368', fontSize: 12 }}
+            tickLine={false}
+            axisLine={false}
+            dy={10}
           />
           <YAxis 
-            stroke="#6b7280"
-            style={{ fontSize: '12px', fontWeight: 500 }}
+            stroke="#9aa0a6"
+            tick={{ fill: '#5f6368', fontSize: 12 }}
+            tickLine={false}
+            axisLine={false}
             tickFormatter={(value) => `${value}L`}
+            dx={-10}
           />
           <Tooltip
             contentStyle={{
               backgroundColor: 'white',
               border: 'none',
-              borderRadius: '12px',
-              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+              borderRadius: '8px',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
               padding: '12px'
             }}
-            labelStyle={{ fontWeight: 600, marginBottom: '4px' }}
-            cursor={{ stroke: 'none', fill: 'none' }}
-            wrapperStyle={{ outline: 'none' }}
-            isAnimationActive={false}
+            itemStyle={{ fontSize: '12px', fontWeight: 500 }}
+            labelStyle={{ fontSize: '12px', color: '#5f6368', marginBottom: '8px' }}
+            cursor={{ stroke: '#dadce0', strokeWidth: 1, strokeDasharray: '4 4' }}
           />
           <Area
             type="monotone"
             dataKey="daily"
-            stroke="#3b82f6"
+            stroke="#1a73e8"
             strokeWidth={2}
             fill="url(#colorDaily)"
             name="Daily Collection"
-            isAnimationActive={true}
             animationDuration={1000}
-            animationEasing="ease-in-out"
           />
           <Area
             type="monotone"
             dataKey="weekly"
-            stroke="#8b5cf6"
+            stroke="#a142f4"
             strokeWidth={2}
             fill="url(#colorWeekly)"
             name="Weekly Average"
-            isAnimationActive={true}
-            animationDuration={1200}
-            animationEasing="ease-in-out"
+            animationDuration={1000}
           />
         </AreaChart>
       </ResponsiveContainer>

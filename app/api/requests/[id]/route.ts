@@ -127,8 +127,17 @@ export async function PUT(
     return NextResponse.json(updatedRequest)
   } catch (error) {
     if (error instanceof z.ZodError) {
+      // Format validation errors with specific field messages
+      const fieldErrors = error.issues.map(issue => {
+        const field = issue.path.join('.')
+        return `${field}: ${issue.message}`
+      })
+      
       return NextResponse.json(
-        { error: "Validation failed", details: error.issues },
+        { 
+          error: fieldErrors.join(', '),
+          details: error.issues 
+        },
         { status: 400 }
       )
     }
@@ -192,8 +201,17 @@ export async function PATCH(
     return NextResponse.json(updatedRequest)
   } catch (error) {
     if (error instanceof z.ZodError) {
+      // Format validation errors with specific field messages
+      const fieldErrors = error.issues.map(issue => {
+        const field = issue.path.join('.')
+        return `${field}: ${issue.message}`
+      })
+      
       return NextResponse.json(
-        { error: "Validation failed", details: error.issues },
+        { 
+          error: fieldErrors.join(', '),
+          details: error.issues 
+        },
         { status: 400 }
       )
     }

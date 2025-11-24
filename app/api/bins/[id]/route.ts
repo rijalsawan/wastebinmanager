@@ -67,11 +67,6 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Check if user is admin
-    if (session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
-
     const { id } = await params
     const body = await request.json()
     const validatedData = updateBinSchema.parse(body)
@@ -83,6 +78,11 @@ export async function PUT(
 
     if (!existingBin) {
       return NextResponse.json({ error: "Bin not found" }, { status: 404 })
+    }
+
+    // Check if user is admin or owner
+    if (session.user.role !== "ADMIN" && existingBin.createdBy !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     // If updating binId, check for duplicates
@@ -146,11 +146,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Check if user is admin
-    if (session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
-
     const { id } = await params
 
     // Check if bin exists
@@ -160,6 +155,11 @@ export async function DELETE(
 
     if (!bin) {
       return NextResponse.json({ error: "Bin not found" }, { status: 404 })
+    }
+
+    // Check if user is admin or owner
+    if (session.user.role !== "ADMIN" && bin.createdBy !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     await prisma.bin.delete({

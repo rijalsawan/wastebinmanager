@@ -10,12 +10,12 @@ export default async function BinsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
+    <div className="space-y-8 max-w-[1600px] mx-auto">
+      <div className="flex items-center justify-between bg-white p-6 rounded-2xl border border-[rgb(218,220,224)] shadow-sm">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Waste Bins</h1>
-          <p className="text-slate-600 mt-2">
-            Monitor and manage all waste collection bins
+          <h1 className="text-2xl font-medium text-[rgb(32,33,36)]">Waste Bins</h1>
+          <p className="text-[rgb(95,99,104)] mt-1 text-sm">
+            Monitor and manage all waste collection bins across the city
           </p>
         </div>
       </div>

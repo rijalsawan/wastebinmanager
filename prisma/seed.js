@@ -91,7 +91,7 @@ async function main() {
   // Create some sample requests
   const requests = [
     {
-      type: 'MANUAL_PICKUP',
+      type: 'COLLECTION',
       description: 'Bin is overflowing, urgent pickup needed',
       priority: 'HIGH',
       status: 'PENDING',
@@ -101,15 +101,15 @@ async function main() {
     {
       type: 'MAINTENANCE',
       description: 'Bin lid is broken, needs repair',
-      priority: 'NORMAL',
+      priority: 'MEDIUM',
       status: 'IN_PROGRESS',
       userId: user.id,
       binId: bin2?.id,
     },
     {
-      type: 'HAZARDOUS_WASTE',
+      type: 'REPAIR',
       description: 'Chemical waste detected, handle with care',
-      priority: 'URGENT',
+      priority: 'HIGH',
       status: 'PENDING',
       userId: admin.id,
       binId: bin3?.id,

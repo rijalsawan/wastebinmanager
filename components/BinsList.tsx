@@ -16,6 +16,7 @@ import {
   Eye,
 } from "lucide-react"
 import { BinModal } from "./BinModal"
+import { DeleteConfirmModal } from "./DeleteConfirmModal"
 import { Card } from "./ui/Card"
 import { Badge } from "./ui/Badge"
 import { Button } from "./ui/Button"
@@ -38,12 +39,12 @@ interface Bin {
 }
 
 const WASTE_CATEGORIES = {
-  PLASTIC: { color: "bg-blue-500", gradient: "from-blue-500 to-blue-600", text: "text-blue-700", bg: "bg-blue-50" },
-  PAPER: { color: "bg-purple-500", gradient: "from-purple-500 to-purple-600", text: "text-purple-700", bg: "bg-purple-50" },
-  METAL: { color: "bg-gray-500", gradient: "from-gray-500 to-gray-600", text: "text-gray-700", bg: "bg-gray-50" },
-  ORGANIC: { color: "bg-green-500", gradient: "from-green-500 to-green-600", text: "text-green-700", bg: "bg-green-50" },
-  GLASS: { color: "bg-cyan-500", gradient: "from-cyan-500 to-cyan-600", text: "text-cyan-700", bg: "bg-cyan-50" },
-  EWASTE: { color: "bg-orange-500", gradient: "from-orange-500 to-orange-600", text: "text-orange-700", bg: "bg-orange-50" },
+  PLASTIC: { color: "bg-[#1a73e8]", text: "text-[#1a73e8]", bg: "bg-[#e8f0fe]" },
+  PAPER: { color: "bg-[#a142f4]", text: "text-[#a142f4]", bg: "bg-[#f3e8fd]" },
+  METAL: { color: "bg-[#5f6368]", text: "text-[#5f6368]", bg: "bg-[#f1f3f4]" },
+  ORGANIC: { color: "bg-[#34a853]", text: "text-[#34a853]", bg: "bg-[#e6f4ea]" },
+  GLASS: { color: "bg-[#24c1e0]", text: "text-[#24c1e0]", bg: "bg-[#e0f7fa]" },
+  EWASTE: { color: "bg-[#ea4335]", text: "text-[#ea4335]", bg: "bg-[#fce8e6]" },
 }
 
 interface BinsListProps {
@@ -60,6 +61,9 @@ export function BinsList({ userRole }: BinsListProps) {
   const [filterCategory, setFilterCategory] = useState<string>("")
   const [filterStatus, setFilterStatus] = useState<string>("")
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [binToDelete, setBinToDelete] = useState<Bin | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
   const isAdmin = userRole === "ADMIN"
 
   useEffect(() => {
@@ -97,94 +101,98 @@ export function BinsList({ userRole }: BinsListProps) {
     setActiveDropdown(null)
   }
 
-  const handleDelete = async (bin: Bin) => {
-    if (!confirm(`Are you sure you want to delete ${bin.binId}?`)) return
-
-    try {
-      const response = await fetch(`/api/bins/${bin.id}`, {
-        method: "DELETE",
-      })
-
-      if (response.ok) {
-        fetchBins()
-        router.refresh()
-      }
-    } catch (error) {
-      console.error("Failed to delete bin:", error)
-    }
+  const handleDelete = (bin: Bin) => {
+    setBinToDelete(bin)
+    setDeleteModalOpen(true)
     setActiveDropdown(null)
   }
 
-  const filteredBins = bins.filter((bin) => {
-    const matchesSearch =
-      bin.binId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bin.location.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesSearch
-  })
+  const confirmDelete = async () => {
+    if (!binToDelete) return
 
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      LOW: { variant: "success" as const, label: "Low" },
-      MEDIUM: { variant: "warning" as const, label: "Medium" },
-      HIGH: { variant: "error" as const, label: "High" },
+    setDeleteLoading(true)
+    try {
+      const response = await fetch(`/api/bins/${binToDelete.id}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        alert(error.error || "Failed to delete bin")
+        return
+      }
+
+      await fetchBins()
+      setDeleteModalOpen(false)
+      setBinToDelete(null)
+    } catch (error) {
+      console.error("Failed to delete bin:", error)
+      alert("Failed to delete bin")
+    } finally {
+      setDeleteLoading(false)
     }
-    const config = variants[status as keyof typeof variants] || variants.LOW
-    return <Badge variant={config.variant} dot pulse={status === "HIGH"}>{config.label}</Badge>
   }
 
-  const getLevelColor = (level: number) => {
-    if (level <= 50) return "from-green-500 to-green-600"
-    if (level <= 80) return "from-amber-500 to-amber-600"
-    return "from-red-500 to-red-600"
+  const handleSubmit = async (data: any) => {
+    try {
+      const url = editingBin ? `/api/bins/${editingBin.id}` : "/api/bins"
+      const method = editingBin ? "PUT" : "POST"
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to save bin")
+      }
+
+      await fetchBins()
+      setIsModalOpen(false)
+    } catch (error: any) {
+      console.error("Failed to save bin:", error)
+      throw error
+    }
   }
 
-  if (loading) {
-    return (
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {[...Array(8)].map((_, i) => (
-          <Card key={i} className="p-6 animate-pulse">
-            <div className="h-6 bg-gray-200 rounded w-2/3 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-4/5"></div>
-          </Card>
-        ))}
-      </div>
-    )
-  }
+  const filteredBins = bins.filter(bin => 
+    bin.binId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    bin.location.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
     <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-        <div className="flex-1 w-full lg:w-auto">
-          <Input
+      {/* Filters & Actions */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg border border-[rgb(218,220,224)] shadow-sm">
+        <div className="relative w-full sm:w-96">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[rgb(95,99,104)]" />
+          <input
             type="text"
-            placeholder="Search bins by ID or location..."
+            placeholder="Search bins..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            icon={<Search className="w-4 h-4" />}
-            className="w-full lg:max-w-md"
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-[rgb(218,220,224)] focus:outline-none focus:ring-2 focus:ring-[rgb(26,115,232)]/20 focus:border-[rgb(26,115,232)] transition-all text-sm"
           />
         </div>
 
-        <div className="flex flex-wrap gap-3 w-full lg:w-auto">
+        <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white text-sm font-medium"
+            className="px-3 py-2 rounded-lg border border-[rgb(218,220,224)] text-sm text-[rgb(60,64,67)] focus:outline-none focus:ring-2 focus:ring-[rgb(26,115,232)]/20"
           >
             <option value="">All Categories</option>
-            {Object.keys(WASTE_CATEGORIES).map((cat) => (
-              <option key={cat} value={cat}>
-                {cat.charAt(0) + cat.slice(1).toLowerCase()}
-              </option>
+            {Object.keys(WASTE_CATEGORIES).map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
 
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white text-sm font-medium"
+            className="px-3 py-2 rounded-lg border border-[rgb(218,220,224)] text-sm text-[rgb(60,64,67)] focus:outline-none focus:ring-2 focus:ring-[rgb(26,115,232)]/20"
           >
             <option value="">All Status</option>
             <option value="LOW">Low</option>
@@ -192,177 +200,135 @@ export function BinsList({ userRole }: BinsListProps) {
             <option value="HIGH">High</option>
           </select>
 
-          {isAdmin && (
-            <Button onClick={handleCreate} className="whitespace-nowrap">
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">New Bin</span>
-            </Button>
-          )}
+          <Button onClick={handleCreate} className="shrink-0">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Bin
+          </Button>
         </div>
       </div>
 
-      {/* Bins Grid */}
-      {filteredBins.length === 0 ? (
-        <Card className="p-16 text-center" gradient>
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-20 h-20 bg-linear-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center">
-              <Trash2 className="w-10 h-10 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No bins found</h3>
-              <p className="text-gray-600 mb-6">
-                {searchTerm || filterCategory || filterStatus
-                  ? "Try adjusting your filters"
-                  : isAdmin 
-                    ? "Get started by creating your first bin"
-                    : "No bins available at the moment"}
-              </p>
-              {isAdmin && (
-                <Button onClick={handleCreate}>
-                  <Plus className="w-4 h-4" />
-                  Create Bin
-                </Button>
-              )}
-            </div>
-          </div>
-        </Card>
-      ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {filteredBins.map((bin, index) => {
-            const category = WASTE_CATEGORIES[bin.category as keyof typeof WASTE_CATEGORIES]
-            
-            return (
-              <Card
-                key={bin.id}
-                hover
-                gradient
-                className="group relative overflow-hidden animate-slide-in-bottom"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                {/* Category Color Strip */}
-                <div className={`absolute top-0 left-0 right-0 h-1.5 bg-linear-to-r ${category.gradient}`}></div>
-
-                <div className="p-6">
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-lg font-bold text-gray-900">{bin.binId}</h3>
-                        {getStatusBadge(bin.status)}
-                      </div>
-                      <Badge variant="info" size="sm">
-                        {bin.category}
-                      </Badge>
+      {/* Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {filteredBins.map((bin) => {
+          const categoryStyle = WASTE_CATEGORIES[bin.category as keyof typeof WASTE_CATEGORIES]
+          
+          return (
+            <Card key={bin.id} hover className="group relative overflow-visible">
+              <div className="p-5 space-y-4">
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${categoryStyle.bg}`}>
+                      <Trash2 className={`w-5 h-5 ${categoryStyle.text}`} />
                     </div>
-
-                    {/* Dropdown Menu - Admin Only */}
-                    {isAdmin && (
-                      <div className="relative">
+                    <div>
+                      <h3 className="font-medium text-[rgb(32,33,36)]">{bin.binId}</h3>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${categoryStyle.bg} ${categoryStyle.text}`}>
+                        {bin.category}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="relative">
+                    <button 
+                      onClick={() => setActiveDropdown(activeDropdown === bin.id ? null : bin.id)}
+                      className="p-1.5 hover:bg-[rgb(241,243,244)] rounded-full transition-colors text-[rgb(95,99,104)]"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                    
+                    {activeDropdown === bin.id && (
+                      <div className="absolute right-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-[rgb(218,220,224)] py-1 z-10 animate-scale-in">
                         <button
-                          onClick={() => setActiveDropdown(activeDropdown === bin.id ? null : bin.id)}
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          onClick={() => handleEdit(bin)}
+                          className="w-full px-4 py-2 text-left text-sm hover:bg-[rgb(241,243,244)] flex items-center gap-2 text-[rgb(60,64,67)]"
                         >
-                          <MoreVertical className="w-4 h-4 text-gray-600" />
+                          <Edit className="w-3 h-3" /> Edit
                         </button>
-
-                        {activeDropdown === bin.id && (
-                          <>
-                            <div
-                              className="fixed inset-0 z-10"
-                              onClick={() => setActiveDropdown(null)}
-                            ></div>
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-20 animate-slide-in-bottom">
-                              <button
-                                onClick={() => handleEdit(bin)}
-                                className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-50 flex items-center gap-3 text-gray-700 font-medium transition-colors"
-                              >
-                                <Edit className="w-4 h-4" />
-                                Edit Bin
-                              </button>
-                              <button
-                                onClick={() => handleDelete(bin)}
-                                className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 flex items-center gap-3 text-red-600 font-medium transition-colors"
-                              >
-                                <Trash className="w-4 h-4" />
-                                Delete Bin
-                              </button>
-                            </div>
-                          </>
-                        )}
+                        <button
+                          onClick={() => handleDelete(bin)}
+                          className="w-full px-4 py-2 text-left text-sm hover:bg-[rgb(252,232,230)] flex items-center gap-2 text-[rgb(217,48,37)]"
+                        >
+                          <Trash className="w-3 h-3" /> Delete
+                        </button>
                       </div>
                     )}
                   </div>
+                </div>
 
-                  {/* Fill Level Progress */}
-                  <div className="mb-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-gray-600">Fill Level</span>
-                      <span className="text-lg font-bold text-gray-900">
-                        {bin.currentLevel.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="h-3 bg-gray-100 rounded-full overflow-hidden shadow-inner">
-                      <div
-                        className={`h-full bg-linear-to-r ${getLevelColor(bin.currentLevel)} transition-all duration-500 rounded-full shadow-lg`}
-                        style={{ width: `${Math.min(bin.currentLevel, 100)}%` }}
-                      ></div>
-                    </div>
+                {/* Location */}
+                <div className="flex items-center gap-2 text-sm text-[rgb(95,99,104)]">
+                  <MapPin className="w-4 h-4" />
+                  <span className="truncate">{bin.location}</span>
+                </div>
+
+                {/* Fill Level */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span className="text-[rgb(95,99,104)]">Fill Level</span>
+                    <span className={
+                      bin.currentLevel > 80 ? "text-[rgb(217,48,37)]" : 
+                      bin.currentLevel > 50 ? "text-[rgb(249,171,0)]" : 
+                      "text-[rgb(24,128,56)]"
+                    }>{bin.currentLevel.toFixed(2)}%</span>
                   </div>
-
-                  {/* Location */}
-                  <div className="flex items-start gap-2 text-sm text-gray-600 mb-3">
-                    <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" />
-                    <span className="line-clamp-2">{bin.location}</span>
-                  </div>
-
-                  {/* Last Emptied */}
-                  <div className="flex items-center gap-2 text-xs text-gray-500 pt-3 border-t border-gray-100">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>
-                      Last emptied{" "}
-                      {formatDistanceToNow(new Date(bin.lastEmptied), { addSuffix: true })}
-                    </span>
+                  <div className="h-2 bg-[rgb(241,243,244)] rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        bin.currentLevel > 80 ? "bg-[rgb(234,67,53)]" : 
+                        bin.currentLevel > 50 ? "bg-[rgb(251,188,4)]" : 
+                        "bg-[rgb(52,168,83)]"
+                      }`}
+                      style={{ width: `${bin.currentLevel}%` }}
+                    />
                   </div>
                 </div>
 
-                {/* Hover Glow Effect */}
-                <div className="absolute inset-0 bg-linear-to-br from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300 pointer-events-none rounded-2xl"></div>
-              </Card>
-            )
-          })}
+                {/* Footer */}
+                <div className="pt-4 border-t border-[rgb(241,243,244)] flex items-center justify-between text-xs text-[rgb(95,99,104)]">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    <span>{formatDistanceToNow(new Date(bin.lastEmptied), { addSuffix: true })}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <TrendingUp className="w-3 h-3" />
+                    <span>{bin.capacity}L</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )
+        })}
+      </div>
+
+      {filteredBins.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-[rgb(241,243,244)] rounded-full flex items-center justify-center mx-auto mb-4">
+            <Search className="w-8 h-8 text-[rgb(154,160,166)]" />
+          </div>
+          <h3 className="text-lg font-medium text-[rgb(32,33,36)]">No bins found</h3>
+          <p className="text-[rgb(95,99,104)]">Try adjusting your search or filters</p>
         </div>
       )}
 
-      {/* Modal */}
       <BinModal
         isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false)
-          setEditingBin(null)
-        }}
-        onSubmit={async (data) => {
-          try {
-            const url = editingBin ? `/api/bins/${editingBin.id}` : "/api/bins"
-            const method = editingBin ? "PATCH" : "POST"
-
-            const response = await fetch(url, {
-              method,
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(data),
-            })
-
-            if (!response.ok) {
-              const error = await response.json()
-              throw new Error(error.error || "Failed to save bin")
-            }
-
-            await fetchBins()
-            router.refresh()
-          } catch (error: any) {
-            throw error
-          }
-        }}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
         bin={editingBin || undefined}
+      />
+
+      <DeleteConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setBinToDelete(null)
+        }}
+        onConfirm={confirmDelete}
+        title="Delete bin"
+        message="Are you sure you want to delete this bin? This action cannot be undone."
+        itemName={binToDelete ? `${binToDelete.binId} - ${binToDelete.location}` : undefined}
+        loading={deleteLoading}
       />
     </div>
   )
